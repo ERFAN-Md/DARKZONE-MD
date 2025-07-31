@@ -1,13 +1,19 @@
 {
   "name": "DARKZONE-MD",
   "version": "5.0.0",
-  "description": "A WhatsApp bot created using Node.js",
+  "description": "NOT THE BEST BOT IN THE UNIVERSE, BUT ENJOYMENT US PROMISING",
   "main": "index.js",
+  "engines": {
+    "node": ">=20.x",
+    "npm": ">=10.x"
+  },
   "scripts": {
-    "start": "pm2-runtime index.js --name DARKZONE-MD"
+    "start": "pm2 start index.js --deep-monitoring --attach --name DARKZONE-MD",
+    "stop": "pm2 stop DARKZONE-MD",
+    "restart": "pm2 restart DARKZONE-MD"
   },
   "dependencies": {
-   "@whiskeysockets/baileys": "npm:@baileys-md/stable@^10.0.4",
+    "baileys": "github:EdderBot02/bail",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@dark-yasiya/yt-dl.js": "1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
