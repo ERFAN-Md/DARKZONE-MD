@@ -15,11 +15,16 @@ async(conn, mek, m, {
         // Check if the command is used in a group
         if (!isGroup) return reply("❌ This command can only be used in groups.");
 
-        // Check if the bot is an admin
-        if (!isBotAdmins) return reply("❌ Bot needs to be admin to perform this action.");
+        // Get fresh group metadata
+        const groupInfo = await conn.groupMetadata(from);
+        const isUserAdmin = groupInfo.participants.find(p => p.id === sender)?.admin;
+        const isBotAdmin = groupInfo.participants.find(p => p.id === conn.user.jid)?.admin;
 
-        // Check if the user is an admin (allow group admins to use)
-        if (!isAdmins) return reply("❌ Only group admins can use this command.");
+        // Check if bot is admin
+        if (!isBotAdmin) return reply("❌ The bot needs to be an admin to perform this action.");
+
+        // Check if user is admin
+        if (!isUserAdmin) return reply("❌ Only group admins can use this command.");
 
         let number;
         if (m.quoted) {
@@ -40,7 +45,7 @@ async(conn, mek, m, {
         const jid = number + "@s.whatsapp.net";
 
         // Check if target is in the group
-        const participantExists = participants.some(p => p.id === jid);
+        const participantExists = groupInfo.participants.some(p => p.id === jid);
         if (!participantExists) {
             return reply("❌ This user is not in the group.");
         }
@@ -48,9 +53,6 @@ async(conn, mek, m, {
         // Prevent demoting the bot itself
         if (jid === conn.user.jid) return reply("❌ I can't demote myself!");
 
-        // Get fresh group metadata
-        const groupInfo = await conn.groupMetadata(from);
-        
         // Prevent demoting the group creator
         if (jid === groupInfo.owner) return reply("❌ Cannot demote the group creator.");
 
@@ -64,6 +66,10 @@ async(conn, mek, m, {
 
     } catch (error) {
         console.error("Demote command error:", error);
-        reply("❌ Failed to demote. Please try again later.");
+        if (error.message.includes("not authorized")) {
+            reply("❌ The bot doesn't have sufficient permissions to demote.");
+        } else {
+            reply("❌ Failed to demote. Please try again later.");
+        }
     }
 });
