@@ -16,10 +16,10 @@ async(conn, mek, m, {
         if (!isGroup) return reply("❌ This command can only be used in groups.");
 
         // Check if the bot is an admin
-        if (!isBotAdmins) return reply("❌ I need to be an admin to use this command.");
+        if (!isBotAdmins) return reply("❌ Bot needs to be admin to perform this action.");
 
-        // Check if the user is an admin or bot owner/developer
-        if (!isAdmins && !isOwner && !isDev) return reply("❌ Only group admins can use this command.");
+        // Check if the user is an admin (allow group admins to use)
+        if (!isAdmins) return reply("❌ Only group admins can use this command.");
 
         let number;
         if (m.quoted) {
@@ -29,7 +29,7 @@ async(conn, mek, m, {
         } else if (args[0]) {
             number = args[0];
         } else {
-            return reply("❌ Please reply to an admin's message or mention an admin to demote.");
+            return reply("❌ Please reply to an admin's message or mention an admin to demote.\nExample: .demote @user");
         }
 
         // Validate the number
@@ -40,27 +40,30 @@ async(conn, mek, m, {
         const jid = number + "@s.whatsapp.net";
 
         // Check if target is in the group
-        if (!participants.some(p => p.id === jid)) {
+        const participantExists = participants.some(p => p.id === jid);
+        if (!participantExists) {
             return reply("❌ This user is not in the group.");
         }
 
         // Prevent demoting the bot itself
-        if (jid === conn.user.jid) return reply("❌ I can't demote myself.");
+        if (jid === conn.user.jid) return reply("❌ I can't demote myself!");
 
-        // Prevent demoting the group creator
+        // Get fresh group metadata
         const groupInfo = await conn.groupMetadata(from);
+        
+        // Prevent demoting the group creator
         if (jid === groupInfo.owner) return reply("❌ Cannot demote the group creator.");
 
         // Check if target is actually an admin
-        const targetIsAdmin = groupAdmins.includes(jid);
+        const targetIsAdmin = groupInfo.participants.find(p => p.id === jid)?.admin;
         if (!targetIsAdmin) return reply("❌ This user is not an admin.");
 
         // Perform the demote action
         await conn.groupParticipantsUpdate(from, [jid], "demote");
-        reply(`✅ Successfully demoted @${number} to normal member.`, { mentions: [jid] });
+        reply(`⬇️ Successfully demoted @${number} to member.`, { mentions: [jid] });
 
     } catch (error) {
         console.error("Demote command error:", error);
-        reply("❌ An error occurred while trying to demote. Please try again.");
+        reply("❌ Failed to demote. Please try again later.");
     }
 });
