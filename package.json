@@ -7,7 +7,7 @@
     "start": "pm2-runtime index.js --name DARKZONE-MD"
   },
   "dependencies": {
-   "@whiskeysockets/baileys": "github:EdderBot02/bail",
+   "@whiskeysockets/baileys": "npm:@baileys-md/stable@^10.0.4",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@dark-yasiya/yt-dl.js": "1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
