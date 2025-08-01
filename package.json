@@ -9,7 +9,6 @@
     "restart": "pm2 restart DARKZONE-MD"
   },
   "dependencies": {
-    "@adiwajshing/baileys": "git+https://github.com/souravkl11/Baileys.git",
     "@adiwajshing/keyed-db": "0.2.4",
     "@whiskeysockets/baileys": "github:sou6av/baileys-js",
     "@dark-yasiya/yt-dl.js": "1.0.5",
