@@ -1,7 +1,7 @@
 {
   "name": "DARKZONE-MD",
   "version": "4.5.0",
-  "description": "A WhatsApp Bot Created By DARKZONE-MD",
+  "description": "A WhatsApp Bot Created By ERFAN 💯",
   "main": "index.js",
   "scripts": {
     "start": "pm2 start index.js --deep-monitoring --attach --name DARKZONE-MD",
@@ -9,8 +9,8 @@
     "restart": "pm2 restart DARKZONE-MD"
   },
   "dependencies": {
-    "@adiwajshing/keyed-db": "0.2.4",
-    "@whiskeysockets/baileys": "github:sou6av/baileys-js",
+    "@whiskeysockets/baileys": "npm:@fizzxydev/baileys-pro@8.5.12",
+    "@adiwajshing/keyed-db": "^0.2.4",
     "@dark-yasiya/yt-dl.js": "1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@vitalets/google-translate-api": "^9.2.0",
