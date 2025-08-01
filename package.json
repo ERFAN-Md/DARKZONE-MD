@@ -9,7 +9,7 @@
     "restart": "pm2 restart DARKZONE-MD"
   },
   "dependencies": {
-     "@whiskeysockets/baileys": "git+https://github.com/darkalphaxteam/Baileys-New.git",
+    "@whiskeysockets/baileys": "github:EdderBot02/bail",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@dark-yasiya/yt-dl.js": "1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
