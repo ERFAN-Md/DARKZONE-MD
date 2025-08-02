@@ -4,7 +4,7 @@ cmd({
     pattern: "demote",
     alias: ["d", "dismiss", "removeadmin"],
     desc: "Demotes a group admin to normal member",
-    category: "admin",
+    category: "user",
     react: "⬇️",
     filename: __filename
 },
