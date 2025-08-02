@@ -2,59 +2,58 @@ const { cmd } = require('../command');
 
 cmd({
     pattern: "demote",
-    alias: ["d", "dismiss", "removeadmin"],
-    desc: "Demotes a group admin to normal member",
+    alias: ["d", "removeadmin"],
+    desc: "Remove admin status from another admin",
     category: "admin",
     react: "⬇️",
     filename: __filename
 },
-async(conn, mek, m, {
-    from, sender, isGroup, reply, isAdmins, isBotAdmins, groupMetadata
-}) => {
+async (Void, citel, text) => {
     try {
-        // Basic checks
-        if (!isGroup) return reply("❌ This command only works in groups!");
-        if (!isAdmins) return reply("❌ Only admins can use this command!");
-        if (!isBotAdmins) return reply("❌ I need admin rights to demote members!");
-
-        // Get fresh group info
-        const groupInfo = await conn.groupMetadata(from);
-        const botJid = conn.user.jid;
+        if (!citel.isGroup) return citel.reply("❌ Command only works in groups!");
         
-        // Find target user
-        let targetUser;
-        if (m.quoted) {
-            targetUser = m.quoted.sender;
-        } else if (m.mentionedJid && m.mentionedJid[0]) {
-            targetUser = m.mentionedJid[0];
+        // Get fresh group info
+        const groupInfo = await Void.groupMetadata(citel.chat);
+        const participants = groupInfo.participants;
+        
+        // Check if sender is admin
+        const senderAdmin = participants.find(p => p.id === citel.sender)?.admin;
+        if (!senderAdmin) return citel.reply("❌ Only admins can use this command!");
+        
+        // Check if bot is admin
+        const botAdmin = participants.find(p => p.id === Void.user.jid)?.admin;
+        if (!botAdmin) return citel.reply("❌ I need admin rights to demote!");
+
+        // Get target user
+        let target;
+        if (citel.quoted) {
+            target = citel.quoted.sender;
+        } else if (citel.mentionedJid?.[0]) {
+            target = citel.mentionedJid[0];
         } else {
-            return reply("❌ Please reply to or mention an admin!\nExample: .demote @user");
+            return citel.reply("❌ Reply to or mention an admin!\nExample: .demote @user");
         }
 
-        // Validations
-        if (targetUser === sender) return reply("❌ You can't demote yourself!");
-        if (targetUser === botJid) return reply("❌ I can't demote myself!");
-        if (targetUser === groupInfo.owner) return reply("❌ Cannot demote the group owner!");
+        // Check if target exists in group
+        const targetParticipant = participants.find(p => p.id === target);
+        if (!targetParticipant) return citel.reply("❌ User not found in group!");
 
-        // Check if target is actually an admin
-        const targetIsAdmin = groupInfo.participants.find(p => p.id === targetUser)?.admin;
-        if (!targetIsAdmin) return reply("❌ This user isn't an admin!");
+        // Check if target is actually admin
+        if (!targetParticipant.admin) return citel.reply("❌ User is not an admin!");
+
+        // Prevent demoting group owner
+        if (target === groupInfo.owner) return citel.reply("❌ Cannot demote group owner!");
 
         // Perform demotion
-        await conn.groupParticipantsUpdate(from, [targetUser], "demote");
+        await Void.groupParticipantsUpdate(citel.chat, [target], "demote");
         
-        // Success message with mention
-        const mention = targetUser.split('@')[0];
-        return reply(`⬇️ @${mention} has been demoted to member!`, { 
-            mentions: [targetUser] 
+        // Success message
+        return citel.reply(`⬇️ @${target.split('@')[0]} is no longer admin!`, { 
+            mentions: [target] 
         });
 
     } catch (error) {
         console.error("Demote error:", error);
-        if (error.message.includes("not authorized")) {
-            reply("❌ I don't have permission to demote this user!");
-        } else {
-            reply("❌ Failed to demote. Please try again.");
-        }
+        return citel.reply("❌ Failed to demote. I may not have enough permissions.");
     }
 });
