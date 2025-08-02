@@ -17,7 +17,7 @@ async (Void, citel, text) => {
         const isBotAdmin = groupInfo.participants.find(p => p.id === Void.user.jid)?.admin;
         
         // Check if bot is admin
-        if (!isBotAdmin) return citel.reply("❌ I need admin rights to promote members!");
+        if (!Admin) return citel.reply("❌ I need admin rights to promote members!");
 
         // Check if sender is admin
         const isUserAdmin = groupInfo.participants.find(p => p.id === citel.sender)?.admin;
