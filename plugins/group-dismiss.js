@@ -17,14 +17,10 @@ async(conn, mek, m, {
 
         // Get fresh group metadata
         const groupInfo = await conn.groupMetadata(from);
-        const isUserAdmin = groupInfo.participants.find(p => p.id === sender)?.admin;
         const isBotAdmin = groupInfo.participants.find(p => p.id === conn.user.jid)?.admin;
 
         // Check if bot is admin
         if (!isBotAdmin) return reply("❌ The bot needs to be an admin to perform this action.");
-
-        // Check if user is admin
-        if (!isUserAdmin) return reply("❌ Only group admins can use this command.");
 
         let number;
         if (m.quoted) {
