@@ -4,68 +4,61 @@ cmd({
     pattern: "demote",
     alias: ["d", "dismiss", "removeadmin"],
     desc: "Demotes a group admin to normal member",
-    category: "user",
+    category: "admin",
     react: "⬇️",
     filename: __filename
 },
 async(conn, mek, m, {
-    from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isCreator, isDev, isAdmins, reply
+    from, sender, isGroup, reply, participants
 }) => {
     try {
-        // Check if the command is used in a group
-        if (!isGroup) return reply("❌ This command can only be used in groups.");
-
+        if (!isGroup) return reply("❌ This command only works in groups!");
+        
         // Get fresh group metadata
         const groupInfo = await conn.groupMetadata(from);
-        const isBotAdmin = groupInfo.participants.find(p => p.id === conn.user.jid)?.admin;
-
-        // Check if bot is admin
-        if (!isBotAdmin) return reply("❌ The bot needs to be an admin to perform this action.");
-
-        let number;
-        if (m.quoted) {
-            number = m.quoted.sender.split("@")[0];
-        } else if (args[0] && args[0].includes("@")) {
-            number = args[0].replace(/[@\s]/g, '');
-        } else if (args[0]) {
-            number = args[0];
-        } else {
-            return reply("❌ Please reply to an admin's message or mention an admin to demote.\nExample: .demote @user");
+        const botJid = conn.user.jid;
+        const isBotAdmin = groupInfo.participants.find(p => p.id === botJid)?.admin;
+        
+        if (!isBotAdmin) {
+            return reply("❌ I need admin rights to demote members!");
         }
 
-        // Validate the number
-        if (!number.match(/^\d+$/)) {
-            return reply("❌ Invalid number format. Please provide a valid phone number.");
+        // Get mentioned user or quoted user
+        let targetUser = m.mentionedJid?.[0] || (m.quoted ? m.quoted.sender : null);
+        
+        if (!targetUser) {
+            return reply("❌ Please mention or reply to the admin you want to demote!\nExample: .demote @user");
         }
 
-        const jid = number + "@s.whatsapp.net";
-
-        // Check if target is in the group
-        const participantExists = groupInfo.participants.some(p => p.id === jid);
-        if (!participantExists) {
-            return reply("❌ This user is not in the group.");
-        }
-
-        // Prevent demoting the bot itself
-        if (jid === conn.user.jid) return reply("❌ I can't demote myself!");
-
-        // Prevent demoting the group creator
-        if (jid === groupInfo.owner) return reply("❌ Cannot demote the group creator.");
+        // Check if target is in group
+        const isInGroup = groupInfo.participants.some(p => p.id === targetUser);
+        if (!isInGroup) return reply("❌ This user isn't in the group!");
 
         // Check if target is actually an admin
-        const targetIsAdmin = groupInfo.participants.find(p => p.id === jid)?.admin;
-        if (!targetIsAdmin) return reply("❌ This user is not an admin.");
+        const targetIsAdmin = groupInfo.participants.find(p => p.id === targetUser)?.admin;
+        if (!targetIsAdmin) return reply("❌ This user isn't an admin!");
+
+        // Don't allow demoting yourself
+        if (targetUser === sender) return reply("❌ You can't demote yourself!");
+
+        // Don't allow demoting the bot
+        if (targetUser === botJid) return reply("❌ I can't demote myself!");
 
         // Perform the demote action
-        await conn.groupParticipantsUpdate(from, [jid], "demote");
-        reply(`⬇️ Successfully demoted @${number} to member.`, { mentions: [jid] });
+        await conn.groupParticipantsUpdate(from, [targetUser], "demote");
+        
+        // Success message with mention
+        const mention = targetUser.split('@')[0];
+        await reply(`⬇️ Successfully demoted @${mention} to member!`, { 
+            mentions: [targetUser] 
+        });
 
     } catch (error) {
-        console.error("Demote command error:", error);
+        console.error("Demote error:", error);
         if (error.message.includes("not authorized")) {
-            reply("❌ The bot doesn't have sufficient permissions to demote.");
+            reply("❌ I don't have permission to demote this user!");
         } else {
-            reply("❌ Failed to demote. Please try again later.");
+            reply("❌ An error occurred while trying to demote. Please try again.");
         }
     }
 });
